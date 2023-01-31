@@ -1,0 +1,111 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2021-05-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "databaseCollation": {
+      "type": "string",
+      "defaultValue": "SQL_Latin1_General_CP1_CI_CS"
+    },
+    "databaseEdition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ]
+    },
+    "databaseMaxSizeBytes": {
+      "type": "string",
+      "defaultValue": "1073741824"
+    },
+	"databaseName": {
+    "type": "string",
+    "defaultValue": "dbName"
+    },
+    "adminName": {
+    "type": "string",
+    "defaultValue": "adminName"
+    },
+    "adminPassword": {
+    "type": "string",
+    "defaultValue": "adminPassword"
+    },
+	"sqlserverName": {
+    "type": "string",
+    "defaultValue": "sqlserverName"
+    },
+	"vnetName": {
+    "type": "string",
+    "defaultValue": "vnetName"
+    },
+	"dbSubnetName": {
+    "type": "string",
+    "defaultValue": "dbSubnetName"
+    },
+	"privateEndpointName": {
+    "type": "string",
+    "defaultValue": "privateEndpointName"
+    },
+	
+	
+}
+
+  "variables": {    
+  },
+  "resources": [
+    {
+      "apiVersion": "2021-05-01",
+      "name": "[parameters('sqlserverName')]",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "administratorLogin": "[parameters('adminName')]",
+        "administratorLoginPassword": "[parameters('adminPassword')]"
+      },
+      "tags": {
+        "displayName": "SqlServer"
+      }
+	},
+    {
+          "apiVersion": "2021-05-01",
+          "name": [parameters('databaseName')],
+          "type": "databases",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', parameters('sqlserverName'))]"
+          ],
+          "properties": {
+            "edition": "[parameters('databaseEdition')]",
+            "collation": "[parameters('databaseCollation')]",
+            "maxSizeBytes": "[parameters('databaseMaxSizeBytes')]",
+          },
+          "tags": {
+            "displayName": "Database"
+          }
+    },
+    {
+	  "type": "Microsoft.Network/privateEndpoints",
+	  "apiVersion": "2021-05-01",
+	  "name": "[parameters('privateEndpointName')]",
+	  "location": "[parameters('location')]",
+	  "properties": {
+		"subnet": {
+		  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('dbSubnetName'))]"
+		},
+		"privateLinkServiceConnections": [
+		  {
+			"name": "[parameters('privateEndpointName')]",
+			"properties": {
+			  "privateLinkServiceId": "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]",
+			  "groupIds": [
+				"sqlServer"
+			  ]
+			}
+		  }
+		]
+	   }
+	}
+		
+  ]
+}

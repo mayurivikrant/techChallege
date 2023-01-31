@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2021-05-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+	  "databaseEdition": {
+	    "value": "Premium"
+      },
+	  "databaseName": {
+	    "value": "azureSqlInfraDatabase"
+      },
+	  "adminName": {
+	    "value": "admin"
+      },
+	  "adminPassword": {
+	    "value": "adminPassword"
+      },
+	  "sqlserverName": {
+	    "value": "azureSqlInfraServer"
+      },	  	  
+	  "vnetName": {
+	    "value": "VnetInfra"
+      },
+	  "dbSubnetName": {
+	    "value": "Subnet-db"
+      },
+	  "privateEndpointName": {
+	    "value": "azureSqlInfraServer-PE"
+      }
+  }
+}

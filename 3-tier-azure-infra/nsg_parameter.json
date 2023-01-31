@@ -1,0 +1,101 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "0.0.0.1",
+    "parameters": {
+        "NsgParamArray": {
+            "value": [
+                {
+                    "name": "Nsg-web",
+                    "ResourceGroupName": "azureInfraRG",
+                    "SubscriptionId": "1234567890",
+                    "Region": "eastus",
+                    "SecurityRules": [
+                        {
+                            "name": "AllowAllInboundWeb",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "1433",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "priority": "101"
+                        },
+						                        {
+                            "name": "DenyInboundVNet",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "10.0.0.0/16",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "1433",
+                            "access": "Deny",
+                            "direction": "Inbound",
+                            "priority": "100"
+                        },
+                    ]
+                },
+                {
+                    "name": "Nsg-app",
+                    "ResourceGroupName": "azureInfraRG",
+                    "SubscriptionId": "1234567890",
+                    "Region": "eastus",
+                    "SecurityRules": [
+                        {
+                            "name": "AllowAllInboundAppVNet",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "10.0.0.0/16",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "1433",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "priority": "100"
+                        },
+						{
+                            "name": "AllowAllOutboundAppVNet",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "10.0.0.0/16",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "1433",
+                            "access": "Allow",
+                            "direction": "Outbound",
+                            "priority": "101"
+                        },
+						
+                    ]
+                },
+                {
+                    "name": "Nsg-db",
+                    "ResourceGroupName": "azureInfraRG",
+                    "SubscriptionId": "1234567890",
+                    "Region": "eastus",
+                    "SecurityRules": [
+                        {
+                            "name": "AllowAllInboundDBVNet",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "10.0.0.0/16",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "1433",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "priority": "100"
+                        },
+						{
+                            "name": "AllowAllOutboundDBVNet",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "sourceAddressPrefix": "10.0.0.0/16",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "1433",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "priority": "100"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

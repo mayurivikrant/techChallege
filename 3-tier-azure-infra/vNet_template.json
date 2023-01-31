@@ -8,7 +8,7 @@
         "vNetPrefix": {
             "type": "string"
         },
-		   "subnets": {
+       "subnets": {
            "type": "array"
         }
     },
@@ -35,7 +35,8 @@
             "input": {
                 "name": "[parameters('subnets')[copyIndex('subnets')].name]",
                 "properties": {
-                "addressPrefix": "[parameters('subnets')[copyIndex('subnets')].addressPrefix]"
+                "addressPrefix": "[parameters('subnets')[copyIndex('subnets')].addressPrefix]",
+	        "networkSecurityGroup": "[parameters('subnets')[copyIndex('subnets')].nsgName]"
                }
             }
           }

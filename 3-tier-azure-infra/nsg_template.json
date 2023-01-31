@@ -1,0 +1,61 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "NsgParamArray": {
+            "type": "array"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "apiVersion": "2017-05-10",
+            "type": "Microsoft.Resources/deployments",
+            "name": "[parameters('NsgParamArray')[copyIndex('Nsgs')].name]",
+            "subscriptionId": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SubscriptionId]",
+            "resourceGroup": "[parameters('NsgParamArray')[copyIndex('Nsgs')].ResourceGroupName]",
+            "copy": {
+                "name": "Nsgs",
+                "count": "[length(parameters('NsgParamArray'))]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+                    "contentVersion": "1.0.0.0",
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2017-10-01",
+                            "type": "Microsoft.Network/networkSecurityGroups",
+                            "name": "[concat('Nsg-',parameters('NsgParamArray')[copyIndex('Nsgs')].name)]",
+                            "location": "[parameters('NsgParamArray')[copyIndex('Nsgs')].Region]",
+                            "properties": {
+                                "copy": [
+                                    {
+                                        "name": "securityRules",
+                                        "count": "[length(parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules)]",
+                                        "input": {
+                                            "name": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].name]",
+                                            "properties": {
+                                                "protocol": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].protocol]",
+                                                "sourcePortRange": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].sourcePortRange]",
+                                                "destinationPortRange": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].destinationPortRange]",
+                                                "access": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].access]",
+                                                "sourceAddressPrefix": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].sourceAddressPrefix]",
+                                                "destinationAddressPrefix": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].destinationAddressPrefix]",
+                                                "direction": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].direction]",
+                                                "priority": "[parameters('NsgParamArray')[copyIndex('Nsgs')].SecurityRules[copyIndex('securityRules')].priority]"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

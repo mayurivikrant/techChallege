@@ -12,15 +12,18 @@
       "value": [
         {
           "name": "Subnet-web",
-          "addressPrefix": "10.0.1.0/24"
+          "addressPrefix": "10.0.1.0/24",
+          "nsgName": "Nsg-web"
         },
         {
           "name": "Subnet-app",
-          "addressPrefix": "10.0.2.0/24"
+          "addressPrefix": "10.0.2.0/24",
+           "nsgName": "Nsg-app"
         },
         {
           "name": "Subnet-db",
-          "addressPrefix": "10.0.3.0/24"
+          "addressPrefix": "10.0.3.0/24",
+           "nsgName": "Nsg-db"
         }
 
       ]

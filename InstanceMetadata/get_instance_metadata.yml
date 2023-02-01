@@ -1,0 +1,47 @@
+# Get instance metadata for VMs in a subscription
+trigger: none
+pr: none
+
+name: '$(Build.BuildId)'
+
+variables:
+
+jobs:
+- job: Get_instance_metadata
+  pool:
+    vmImage: 'windows-latest'
+  timeoutInMinutes: 300
+  cancelTimeoutInMinutes: 5
+
+  steps:
+    - task: AzurePowerShell@5
+      inputs:
+        azureSubscription: $(azureSubscription) 
+        ScriptType:  'InlineScript'
+        Inline: 
+          # Function to get VMs in a subscription
+          
+          function getAZVMs(){
+           $instances = Get-AzVM
+           return $instances
+          }
+          
+          # Function to get instance details(metadata for each VM) based on parameter
+          
+          function getInstanceDetails([object[]]$instancesforMetadata, $metadataParam){
+             
+             foreach ($instance in instancesforMetadata)
+             {
+                 $instanceRG = $($instance.ResourceGroupName)
+                 $instanceName = $($instance.Name)
+                 Invoke-AzVMRunCommand -ResourceGroupName '$instanceRG' -VMName '$instanceName' -CommandId 'RunPowerShellScript' -ScriptPath 'get_instance_metadata.ps1' -Parameter @{scriptMetadataParam = "$metadataParam"}
+             }
+             
+           # Main 
+           $metadataParamInput = $(metadataRuntimePipelineVariable)
+           [object[]]$vmObjects = getAZVMs
+           
+           getInstanceDetails $vmObjects $metadataParamInput
+           
+          
+          }

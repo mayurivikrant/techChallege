@@ -1,0 +1,74 @@
+# Deploy Azure Infra
+
+trigger: none
+pr: none
+
+name: '$(Build.BuildId)'
+
+variables:
+# variable groups (below variable group is connected to azure keyvault)
+- group: "VM Passwords"
+
+jobs:
+- job: Deploy_Infra
+  pool:
+    vmImage: 'windows-latest'
+  timeoutInMinutes: 300
+  cancelTimeoutInMinutes: 5
+
+  steps:
+    #-- Deploy Resource Group --#
+    - task: AzurePowerShell@5
+     inputs:
+      azureSubscription: $(azureSubscription) 
+      ScriptType:  'InlineScript'
+      Inline:
+        New-AzureRmDeployment -Name "$(rgName)" -Location "$(rgLocation)" -TemplateParameterFile $(rgParamFilePath) -TemplateFile $(rgTemplateFilePath)
+      
+    #-- Deploy NSG --#
+    - task: AzureResourceGroupDeployment@2
+      inputs:
+        azureSubscription: $(armServiceConnection)
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: $(rgName)
+        templateLocation: 'Linked artifact'
+        csmFile: $(nsgTemplateFilePath)
+        csmParametersFile: $(nsgParamFilePath)
+        deploymentMode: 'Incremental'
+        
+   #-- Deploy VNet and subnets --#
+    - task: AzureResourceGroupDeployment@2
+      inputs:
+        azureSubscription: $(armServiceConnection)
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: $(rgName)
+        templateLocation: 'Linked artifact'
+        csmFile: $(vnetTemplateFilePath)
+        csmParametersFile: $(vnetParamFilePath)
+        deploymentMode: 'Incremental'
+    
+    #-- Deploy Database --#
+    - task: AzureResourceGroupDeployment@2
+      inputs:
+        azureSubscription: $(armServiceConnection)
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: $(rgName)
+        templateLocation: 'Linked artifact'
+        csmFile: $(dbTemplateFilePath)
+        csmParametersFile: $(dbParamFilePath)
+        overrideParameters: -adminName $(dbAdminName) -adminPassword $(dbAdminPwd)
+        deploymentMode: 'Incremental'
+      
+    #-- Deploy VMs --#
+    - task: AzureResourceGroupDeployment@2
+      inputs:
+        azureSubscription: $(armServiceConnection)
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: $(rgName)
+        templateLocation: 'Linked artifact'
+        csmFile: $(vmTemplateFilePath)
+        csmParametersFile: $(vmParamFilePath)
+        overrideParameters: -AdminUsername $(vmAdminName) -AdminPassword $(vmAdminPwd)
+        deploymentMode: 'Incremental'
+    
+   

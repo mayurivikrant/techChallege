@@ -1,0 +1,96 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2021-05-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VnetResourceGroup": {
+      "type": "string"
+    },
+    "VnetName": {
+      "type": "string"
+    },
+    "AdminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username for VM"
+      }
+    },
+    "AdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password for VM"
+      }
+    },
+    "VMNames": {
+      "type": "array",
+      "metadata": {
+        "description": "VM names, images and their subnets"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('VMNames')[copyIndex('nicLoop')].VMName, '-nic')]",
+      "apiVersion": "2021-05-01",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[length(parameters('VMNames'))]"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[concat(resourceId(parameters('VnetResourceGroup'),'Microsoft.Network/virtualNetworks/subnets',parameters('VnetName')),'/subnets/',parameters('VMNames')[copyIndex('nicLoop')].subnetName))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('VMNames')[copyIndex()]]",
+      "apiVersion": "2021-05-01",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "virtualMachineLoop",
+        "count": "[length(parameters('VMNames'))]"
+      },
+      "dependsOn": [
+        "nicLoop"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_D1_v2"
+        },
+        "osProfile": {
+          "computerName": "[parameters('VMNames')[copyIndex()]]",
+          "adminUsername": "[parameters('AdminUsername')]",
+          "adminPassword": "[parameters('AdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+			"id": "[resourceId(parameters('VnetResourceGroup'), 'Microsoft.Compute/images', parameters('VMNames')[copyIndex('virtualMachineLoop')].VMImageName))]"
+		  },
+          "osDisk": {
+            "createOption": "FromImage",
+			"managedDisk": {
+				"storageAccountType": "Standard_LRS"
+			}
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('VMNames')[copyIndex('virtualMachineLoop')].VMName, '-nic'))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
